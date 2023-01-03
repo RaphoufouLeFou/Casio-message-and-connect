@@ -27,7 +27,7 @@ The app present like this :
 
 * F1 start the communication with the ESP32.
 
-* F2 send the signal to the ESP32 to blink the exam led or not. IT DO NOT START THE REAL EXAM MODE OF THE CALCULATOR !
+* F2 send the signal to the ESP32 to blink the exam led or not. IT DOED **NOT** START THE REAL EXAM MODE OF THE CALCULATOR !
 
 * F3 is to open the test mode of the calculator.
 
