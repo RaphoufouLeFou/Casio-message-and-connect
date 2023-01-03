@@ -49,7 +49,7 @@ void CreateBT(char Name){           //create BT acces point
             break;
         }
     }
-    Serial_Write(Name, 21);         //Send the name of BT AP to the ESP32
+    Serial_Write(Name, strlen(Name));         //Send the name of BT AP to the ESP32
     return 1;
 }
 
@@ -105,8 +105,8 @@ void OpenBTList(){                          //Create the window to connect to a 
     GetFKeyPtr(0x02B1, &iresult5);
     FKey_Display(5, iresult5);      //F6
 
-
-    char *List[2048];                           //Get the list of devices
+    //Get the list of devices
+    char *List[2048];                           
     GetBTLsit(List);
     char delim[] = "#";                         //set the delimiter of Device in the list
 
@@ -122,7 +122,7 @@ void OpenBTList(){                          //Create the window to connect to a 
     for (int j = 0; j < i; j++){                //Display the devices on screen
         
         locate_OS(1,(j+3));
-        unsigned char VaTeFaireFoutre[1024];
+        unsigned char VaTeFaireFoutre[1024];    //i raged, that's why this variable is named like that lol
         itoa((j+1), VaTeFaireFoutre);
         strcat(VaTeFaireFoutre, ":");
         strcat(VaTeFaireFoutre, DetailedList[j]);
@@ -298,6 +298,7 @@ void main(void) {
                 Bdisp_AllClr_VRAM();
                 DefineStatusAreaFlags(3, SAF_BATTERY, 0, 0);
                 window = 0;
+                Cursor_SetFlashOff();
                 MainMenu();
             }
 
@@ -306,6 +307,7 @@ void main(void) {
         if(window == 2){
             if(key == KEY_CTRL_F6){
                 Bdisp_AllClr_VRAM();
+                Cursor_SetFlashOff();
                 DefineStatusAreaFlags(3, SAF_BATTERY, 0, 0);
                 window = 1;
                 OpenBTList();

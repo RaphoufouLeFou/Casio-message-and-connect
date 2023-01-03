@@ -25,6 +25,25 @@ char GetDeviceName(void){
     }
 }
 
+char GetNewMessage(void){
+
+    unsigned char *Msg[2048];
+    Serial_Write("&GetMsg&", 8);     //send signal to the ESP32 to get new messages
+    int recSize;
+    int CountExcess = 0;
+    while(Serial_Read(Msg, 1024, recSize) == 1){     //waiting for a response
+        CountExcess++;
+        if(CountExcess >= 10000){                               //TimeOut
+            break;
+        }
+    }
+    if (Msg == NULL){
+        return "";
+    }else{
+        return Msg;
+    }
+}
+
 void main(void) {
     int key;
     int IsExam = 0;
@@ -64,9 +83,25 @@ void main(void) {
             //TestMode(1);
             break;
         }
+        if (key == KEY_CTRL_F6) {
+            unsigned char *Msg[2048];
+            if(Msg == ""){
+                locate_OS(1,7);
+                Print_OS("No new messages      ", 0, 0);
+            }
+            else {
+                locate_OS(1, 5);
+                Print_OS(">>", 0, 0);
+                locate_OS(3, 5);
+                strcat(Msg, GetNewMessage());
+                strcat(Msg, "                ");
+                Print_OS(Msg, 0, 0);
+            }
+        }
+
         if((key >= 65 && key <= 90) || (key >= 48 && key <= 57) || key == 32){
             
-            locate_OS(MsgLength,4);
+            locate_OS(MsgLength,3);
             unsigned char buffer[12];
             sprintf(buffer, "%c", key);
             Print_OS(buffer, 0, 0);
@@ -76,10 +111,10 @@ void main(void) {
         else if(key == KEY_CTRL_DEL){
             if(MsgLength > 3){
                 MsgLength--;
-                locate_OS(MsgLength,4);
+                locate_OS(MsgLength,3);
                 Print_OS(" ", 0, 0);
                 strcpy(&MsgBuffer[strlen(MsgBuffer)-1], &MsgBuffer[strlen(MsgBuffer)]);
-                locate_OS(MsgLength,4);
+                locate_OS(MsgLength,3);
             }
         }
         if(key == KEY_CTRL_EXE){
@@ -88,8 +123,8 @@ void main(void) {
             }else{
                 Serial_Write(MsgBuffer, strlen(MsgBuffer));
                 locate_OS(1,7);
-                Print_OS("Msg sent !     ", 0, 0);
-                locate_OS(MsgLength,4);
+                Print_OS("Msg sent !             ", 0, 0);
+                locate_OS(MsgLength,3);
             }
         }
 

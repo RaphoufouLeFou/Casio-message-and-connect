@@ -11,6 +11,7 @@ String buffer;
 BluetoothSerial SerialBT;
 bool connected;
 String name;
+String RecevedMsg;
 
 #define BT_DISCOVER_TIME  10000
 
@@ -42,16 +43,18 @@ void loop() {
     }else if(buffer == "&GetName&"){
       Serial.write(name);
     }else if(buffer == "&ExmOn&"){
-      ConnectBT();
+      IsExam = true;
     }else if(buffer == "&ExmOff&"){
-      ConnectBT();
+      IsExam = false;
+    }else if(buffer == "&GetMsg&"){
+      Serial.write(RecevedMsg);
     }else{
       SerialBT.write(Serial.read());
     }
     
   }
   if (SerialBT.available()) {
-    Serial.write(SerialBT.read());
+    RecevedMsg = SerialBT.read();
   }
   
   if ((millis() - previousMillis > interval ) && (IsExam)) 
