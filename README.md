@@ -9,7 +9,7 @@ the wiring of the ESP32 in the calculator :
 
 ![shematic](https://github.com/RaphoufouLeFou/Casio-message-and-connect/blob/main/Images/shematic.jpg)
 
-<span style="color:red">**WARNING**, I forgot to put a limiting current resistor between IO19 and the calculator !</style>
+<span style="color:red">**WARNING**, I forgot to put a limiting current resistor between IO19 and the calculator !</span>
 
 Don't forget the 10K pullup resistor betwin 3.3V an EN !
 
@@ -56,3 +56,11 @@ Now, you can  press SHIFT + ALPHA to lock the letter mode, and start typing a na
 * EXE send the signal to the ESP32 to start the bluetooth with the name typed.
 
 # Message app
+
+This app is to communicate with other calculators.
+
+![shematic](https://github.com/RaphoufouLeFou/Casio-message-and-connect/blob/main/Images/Message-1.jpg)
+
+You type your message and then press EXE to send it to the calculator previously connected in the Connect app.
+
+* F6 to receve new messages.
