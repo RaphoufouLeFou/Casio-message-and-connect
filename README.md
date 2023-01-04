@@ -1,4 +1,4 @@
-# CasioMessgae
+# CasioMessage
  
 This project has the goal of implementing a messaging app to a casio fx-CG50, with an ESP32 using bluetooth and UART
 
