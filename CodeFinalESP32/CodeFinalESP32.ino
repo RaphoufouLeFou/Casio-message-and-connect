@@ -1,106 +1,102 @@
-#include <BluetoothSerial.h>
+#include "BluetoothSerial.h"
 #include <map>
 
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
-
-String BTlist[5];
 int count = 0;
 String buffer;
 BluetoothSerial SerialBT;
+
+#define RXD2 16
+#define TXD2 17
+
 bool connected;
 String name;
 String RecevedMsg;
-
-#define BT_DISCOVER_TIME  10000
 
 int ledState = LOW;             // ledState used to set the LED
 bool IsExam = false;
 unsigned long previousMillis = 0; 
 unsigned long interval = 1000UL;
 
+unsigned long previousScanMillis = 0; 
+unsigned long ScanTime = 5000UL;
 void setup() {
 
-  
   Serial.begin(9600);
+  Serial2.begin(9600);
   pinMode(19, OUTPUT);
-  //SerialBT.begin("ESP32test"); //Bluetooth device name
-  //Serial.println("\nThe device started, now you can pair it with bluetooth!");
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_4,0); //1 = High, 0 = Low
 }
 
 void loop() {
   
-  if (Serial.available()) {
-    buffer = Serial.readString();
-    Serial.println(buffer);
-    if(buffer == "&GetBT&"){
-      GetBTlist();
-    }else if(buffer == "&NewBT&"){
+  if (Serial2.available()) {
+    buffer = Serial2.readString();
+    Serial.print(buffer);
+    if(buffer == "&NewBT&"){
       CreateBT();
     }else if(buffer == "&ConnectBT&"){
       ConnectBT();
     }else if(buffer == "&GetName&"){
-      Serial.write(name);
+      Serial2.print(name);
     }else if(buffer == "&ExmOn&"){
       IsExam = true;
     }else if(buffer == "&ExmOff&"){
       IsExam = false;
+    }else if(buffer == "&Sleep&"){
+      delay(1000);
+      esp_deep_sleep_start();
     }else if(buffer == "&GetMsg&"){
-      Serial.write(RecevedMsg);
-    }else{
-      SerialBT.write(Serial.read());
-    }
-    
-  }
-  if (SerialBT.available()) {
-    RecevedMsg = SerialBT.read();
+      Serial2.print(RecevedMsg);
+      RecevedMsg = "";
+    }else if(buffer != "&SleepEXIT&"){
+      SerialBT.print(buffer);
+    }    
   }
   
-  if ((millis() - previousMillis > interval ) && (IsExam)) 
-  {
+  if (SerialBT.available()) {
+    RecevedMsg = SerialBT.readString();
+  }
+  
+  if ((millis() - previousMillis > interval ) && (IsExam)) {
+    
     previousMillis += interval;  
-
-    if (ledState == LOW)
-    {
+    
+    if (ledState == LOW){
       ledState = HIGH;
-    }
-    else
-    {
+    }else{
       ledState = LOW;
     }
-
-    // set the LED with the ledState of the variable:
+    
     digitalWrite(19, ledState);
-    
+  
   }else if (!IsExam){
-    
     digitalWrite(19, LOW);
   }
 }
 
 void CreateBT(){
+  Serial2.write("ok");
   Serial.write("ok");
-  while(!Serial.available());
-  name = Serial.readString();
+  while(!Serial2.available());
+  name = Serial2.readString();
   SerialBT.begin(name);
 }
 
-void GetBTlist(){
-
-}
 void ConnectBT(){
+  Serial2.write("ok");
   Serial.write("ok");
-  while(!Serial.available());
-  name = Serial.readString();
+  while(!Serial2.available());
+  name = Serial2.readString();
   SerialBT.begin("", true); 
   connected = SerialBT.connect(name);
   
   if(connected) {
-    Serial.println("Connected Succesfully!");
+    Serial2.print("&Connect");
+    Serial.write("ok");
   } else {
     while(!SerialBT.connected(10000)) {
-      Serial.println("Failed to connect. Make sure remote device is available and in range, then restart app."); 
+      Serial2.print("&Fail"); 
+      Serial.write("ok");
     }
   }
   SerialBT.connect();

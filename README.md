@@ -64,3 +64,5 @@ This app is to communicate with other calculators.
 You type your message and then press EXE to send it to the calculator previously connected in the Connect app.
 
 * F6 to receve new messages.
+
+* EXE to send a message.

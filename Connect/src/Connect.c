@@ -11,14 +11,15 @@ int IsExam = 0;             //Is led blinking
 int n;                      //selected BT device
 int i = 0;                  //numer of devices
 int IsTyping = 0;           //Is in typing mode
+int IsSleeping = 0;         //Is the ESP32 in deep sleep
 char *DetailedList[5][1024];//list of devices
 int MsgLength = 6;          //Cusror place for text input
 char MsgBuffer[1024];       //Msg enter in text input 
 
 void GetBTLsit(unsigned char *List){    //Get BT device list
 
-    Serial_Write("&GetBT&", 10);    //send signal to the ESP32 to get the avalable device list 
-    char *ReservedBuffer[2048];
+    Serial_Write("&GetBT&", 8);    //send signal to the ESP32 to get the avalable device list 
+    char ReservedBuffer[2048];
     int recSize;
     int CountExcess = 0;
     while(Serial_Read(ReservedBuffer, 1024, recSize) == 1){     //waiting for a response
@@ -37,65 +38,72 @@ void GetBTLsit(unsigned char *List){    //Get BT device list
     return;
 }
 
-void CreateBT(char Name){           //create BT acces point
+void CreateBT(unsigned char* Name){           //create BT acces point
 
-    Serial_Write("&NewBT&", 8);     //send signal to the ESP32 to create BT AP
+     Serial_Write("&NewBT&", 8);     //send signal to the ESP32 to create BT AP
     char *ReservedBuffer[2048];
     int recSize;
     int CountExcess = 0;
     while(Serial_Read(ReservedBuffer, 1024, recSize) == 1){     //waiting for a response
         CountExcess++;
-        if(CountExcess >= 10000){                               //TimeOut
+        if(CountExcess >= 10000000){                               //TimeOut
             break;
         }
     }
-    Serial_Write(Name, strlen(Name));         //Send the name of BT AP to the ESP32
-    return 1;
+    Serial_ClearTX();
+    Serial_Write(Name, strlen(Name)+1);         //Send the name of BT AP to the ESP32
+    return;
 }
 
-int ConnectBT(char Name){           //Connect ESP32 to a BT device
-
-    Serial_Write("&ConnectBT&", 14);    //send signal to the ESP32 to connect
+int ConnectBT(unsigned char* Name){           //Connect ESP32 to a BT device
+    Serial_ClearTX();
+    Serial_Write("&ConnectBT&", 12);    //send signal to the ESP32 to connect
     char *ReservedBuffer[2048];
     int recSize;
     int CountExcess = 0;
     while(Serial_Read(ReservedBuffer, 1024, recSize) == 1){     //waiting for a response
         CountExcess++;
-        if(CountExcess >= 100000){                              //TimeOut
+        if(CountExcess >= 10000000){                              //TimeOut
+            return 2;
             break;
         }
     }
-
-    Serial_Write(Name, 256);              //send the name of the device to connect to the ESP32
+    Serial_ClearTX();
+    Serial_Write(Name, strlen(Name)+1);              //send the name of the device to connect to the ESP32
     char *ReservedBufferBis[2048];
     int recSizeBis;
     CountExcess = 0;
     while(Serial_Read(ReservedBufferBis, 1024, recSizeBis) == 1){   //waiting for a response
         CountExcess++;
-        if(CountExcess >= 10000000){                                //TimeOut
+        if(CountExcess >= 20000000){                                //TimeOut
+            return 2;
             break;
         }
     }
 
     Serial_Read(ReservedBufferBis, 1024, recSizeBis);   //Read the response from the ESP32
-    if(ReservedBufferBis == "&Connect"){            //connected
+    if(strcmp(ReservedBufferBis, "&Connect") == 0){            //connected
         return 1;
-    }else if(ReservedBufferBis == "&Fail"){         //TimeOut
+    }else if(strcmp(ReservedBufferBis, "&Fail") == 0){         //TimeOut
         return 0;
     }
 
-    return;
+    return 2;
 }
 
 void OpenBTList(){                          //Create the window to connect to a BT device
-    IsTyping = 0;
-    n = 0;
+    IsTyping = 1;
+    memset(MsgBuffer, 0, 1024);
     Bdisp_AllClr_VRAM();                    //Clear the Vram
-    DefineStatusAreaFlags(3, SAF_BATTERY, 0, 0);
+    DisplayStatusArea();
     locate_OS(1,1);                                     //Put text to screen
     Print_OS("F1:create BT", 0, 0);
     locate_OS(1,2);
-    Print_OS("BT avalables :", 0, 0);
+    Print_OS("Name of the BT device", 0, 0);
+    locate_OS(1,4);
+    Print_OS("->", 0, 0);
+    Cursor_SetFlashOn("|");
+    MsgLength = 3;
 
     int iresult;                                //Put the Fkey bitmap on screen
     GetFKeyPtr(0x0524, &iresult);
@@ -105,36 +113,20 @@ void OpenBTList(){                          //Create the window to connect to a 
     GetFKeyPtr(0x02B1, &iresult5);
     FKey_Display(5, iresult5);      //F6
 
-    //Get the list of devices
-    char *List[2048];                           
-    GetBTLsit(List);
-    char delim[] = "#";                         //set the delimiter of Device in the list
-
-    char *ptr = strtok(List, delim);            
-    i = 0;
-
-    while(ptr != NULL)                          //separates the devices in the list
-	{
-		DetailedList[i];
-		ptr = strtok(NULL, delim);
-        i++;
-	}
-    for (int j = 0; j < i; j++){                //Display the devices on screen
-        
-        locate_OS(1,(j+3));
-        unsigned char VaTeFaireFoutre[1024];    //i raged, that's why this variable is named like that lol
-        itoa((j+1), VaTeFaireFoutre);
-        strcat(VaTeFaireFoutre, ":");
-        strcat(VaTeFaireFoutre, DetailedList[j]);
-        Print_OS(VaTeFaireFoutre, 0, 0);
-    }
     return;
 }
 
 void CreateBTMenu(){                                //Create the window to create a BT AP
+    MsgLength = 3;
+    memset(MsgBuffer, 0, 1024);
     Bdisp_AllClr_VRAM();                            //clear VRAM
+    DisplayStatusArea();
     locate_OS(1,1);
-    Print_OS("Name:", 0, 0);                        
+    Print_OS("Create new BT", 0, 0);       
+    locate_OS(1,2);
+    Print_OS("Name :", 0, 0);      
+    locate_OS(1,4);
+    Print_OS("->", 0, 0);                  
     Cursor_SetFlashOn("|");
     IsTyping = 1;
 
@@ -142,20 +134,27 @@ void CreateBTMenu(){                                //Create the window to creat
     GetFKeyPtr(0x02B1, &iresult5);
     FKey_Display(5, iresult5);      //F6
 
+    GetFKeyPtr(1017, &iresult5);
+    FKey_Display(0, iresult5);      //F6
 }
-void MainMenu(){
 
+void MainMenu(){
+    
     Bdisp_AllClr_VRAM();
-    DefineStatusAreaFlags(3, SAF_BATTERY, 0, 0);
+    DisplayStatusArea();
     //Put Fkey bmps on screen
     int iresult;
-    GetFKeyPtr(0x0524, &iresult);
+    GetFKeyPtr(0x0165, &iresult);
     FKey_Display(0, iresult);       //F1
     
     int iresult1;
     GetFKeyPtr(0x04F7, &iresult1);
     FKey_Display(1, iresult1);      //F2
         
+    int iresult2;
+    GetFKeyPtr(38, &iresult2);
+    FKey_Display(2, iresult2);      //F3
+
     int iresult3;
     GetFKeyPtr(0x0165, &iresult3);
     FKey_Display(3, iresult3);      //F4
@@ -169,14 +168,14 @@ void MainMenu(){
     locate_OS(1,2);
     Print_OS("F2:exam mode", 0, 0);
     locate_OS(1,3);
-    Print_OS("F3:test mode", 0, 0);
+    Print_OS("F3:power off ESP32", 0, 0);
     locate_OS(1,4);
     Print_OS("F4:open calc list", 0, 0);
     locate_OS(1,6);
     Print_OS("ESP32 disconnected", 0, 0);
     locate_OS(1,7);
     Print_OS("Exam mode off    ", 0, 0);
-
+    Keyboard_PutKeycode(-1, -1, 0x30);
     return;
 }
 
@@ -186,7 +185,10 @@ void main(void) {
 
     int key;
 
+    int isPressed = 0;
+
     while(1){
+        isPressed = 0;
         GetKey(&key);
 
         if(window == 0){
@@ -201,6 +203,7 @@ void main(void) {
                 }else {
                     Serial_Close(1);
                 }
+
             }
 
             if(Serial_IsOpen() == 1){       //check if the serial is open
@@ -211,15 +214,25 @@ void main(void) {
                 Print_OS("ESP32 connected    ", 0, 0);
             }else{                          //This execute if the serial is closed
                 int iresult;
-                GetFKeyPtr(0x0524, &iresult);
+                GetFKeyPtr(0x0165, &iresult);
                 FKey_Display(0, iresult);       //F1
                 locate_OS(1,6);
                 Print_OS("ESP32 disconnected", 0, 0);
             }
 
+            if(IsSleeping == 0){
+                locate_OS(1,3);
+                Print_OS("F3:power on ESP32  ", 0, 0);
+            }else if(IsSleeping == 1){
+                locate_OS(1,3);
+                Print_OS("F3:power off ESP32  ", 0, 0);
+                IsSleeping=0;
+                Serial_Write("&SleepEXIT&", 12);
+            }
+
             if(key == KEY_CTRL_F2){         //Send signal to ESP32 to blink the exam led if F2 is pressed
                 if(IsExam == 0){
-                    Serial_Write("&ExmOn&", 8);
+                     Serial_Write("&ExmOn&", 8);
                     locate_OS(1,7);
                     Print_OS("Exam mode on     ", 0, 0);
                     IsExam = 1;
@@ -234,7 +247,13 @@ void main(void) {
             }
 
             if(key == KEY_CTRL_F3){         //Open test mode if F3 is pressed
-                TestMode(1);
+                
+                if(IsSleeping == 0){
+                    Serial_Write("&Sleep&", 8);
+                    locate_OS(1,3);
+                    Print_OS("F3:power on ESP32  ", 0, 0);
+                    IsSleeping=1;
+                }
             }
 
             if(key == KEY_CTRL_F4){         //Open BT list if F4 is pressed
@@ -246,16 +265,10 @@ void main(void) {
 
         if(window == 1){
 
-            if((key >= 49 && key <= 48+i) && IsTyping == 0){
-                n = key - 48;/*
-                IsTyping = 1;
-                locate_OS(1,7);
-                Print_OS("Pwd:               ", 0, 0);
-                Cursor_SetFlashOn("|");*/
-            }/*
-            else if(((key >= 65 && key <= 90) || (key >= 48 && key <= 57)) && IsTyping == 1){
+            
+            if(((key >= 65 && key <= 90) || (key >= 48 && key <= 57)) && IsTyping == 1){
 
-                locate_OS(MsgLength,7);
+                locate_OS(MsgLength,4);
                 unsigned char buffer[12];
                 sprintf(buffer, "%c", key);
                 Print_OS(buffer, 0, 0);
@@ -263,40 +276,41 @@ void main(void) {
                 MsgLength++;
             }
             else if((key == KEY_CTRL_DEL) && IsTyping == 1){
-                if(MsgLength > 5){
+                if(MsgLength > 3){
                     MsgLength--;
-                    locate_OS(MsgLength,7);
+                    locate_OS(MsgLength,4);
                     Print_OS(" ", 0, 0);
                     strcpy(&MsgBuffer[strlen(MsgBuffer)-1], &MsgBuffer[strlen(MsgBuffer)]);
-                    locate_OS(MsgLength,7);
+                    locate_OS(MsgLength,4);
                 }
-            }*/
-            if((key == KEY_CTRL_EXE) && IsTyping == 1){/*
+            }
+            if((key == KEY_CTRL_EXE) && IsTyping == 1){
                 IsTyping = 0;
                 if(strlen(MsgBuffer) == 0){
                     AUX_DisplayErrorMessage(20);
-                }else if(strlen(MsgBuffer) < 8){
-                    AUX_DisplayErrorMessage(79);
-                }else{*/
-                    //Cursor_SetFlashOff();
+                }else{
+                    Cursor_SetFlashOff();
                     int IsConnected = 0;
-                    IsConnected = ConnectBT(DetailedList[n]);
+                    IsConnected = ConnectBT(MsgBuffer);
                     locate_OS(1,7);
                     if(IsConnected == 0){
-                        Print_OS("error                  ", 0, 0);
-                    }else{
+                        Print_OS("BT not found           ", 0, 0);
+                    }else if (IsConnected == 1){
                         Print_OS("Connected !            ", 0, 0);
+                    }else if (IsConnected == 2){
+                        Print_OS("Communication error    ", 0, 0);
                     }
                     MsgLength = 5;
-                //}
+                }
             }
             if(key == KEY_CTRL_F1){
+                isPressed = 1;
                 window = 2;
                 CreateBTMenu();
             }
             if(key == KEY_CTRL_F6){
                 Bdisp_AllClr_VRAM();
-                DefineStatusAreaFlags(3, SAF_BATTERY, 0, 0);
+                DisplayStatusArea();
                 window = 0;
                 Cursor_SetFlashOff();
                 MainMenu();
@@ -308,14 +322,14 @@ void main(void) {
             if(key == KEY_CTRL_F6){
                 Bdisp_AllClr_VRAM();
                 Cursor_SetFlashOff();
-                DefineStatusAreaFlags(3, SAF_BATTERY, 0, 0);
+                DisplayStatusArea();
                 window = 1;
                 OpenBTList();
             } 
 
             else if(((key >= 65 && key <= 90) || (key >= 48 && key <= 57)) && IsTyping == 1){
 
-                locate_OS(MsgLength,1);
+                locate_OS(MsgLength,4);
                 unsigned char buffer[12];
                 sprintf(buffer, "%c", key);
                 Print_OS(buffer, 0, 0);
@@ -323,26 +337,26 @@ void main(void) {
                 MsgLength++;
             }
             else if((key == KEY_CTRL_DEL) && IsTyping == 1){
-                if(MsgLength > 6){
+                if(MsgLength > 3){
                     MsgLength--;
-                    locate_OS(MsgLength,1);
+                    locate_OS(MsgLength,4);
                     Print_OS(" ", 0, 0);
                     strcpy(&MsgBuffer[strlen(MsgBuffer)-1], &MsgBuffer[strlen(MsgBuffer)]);
-                    locate_OS(MsgLength,1);
+                    locate_OS(MsgLength,4);
                 }
             }
-            if((key == KEY_CTRL_EXE) && IsTyping == 1){
+            if(((key == KEY_CTRL_EXE) || (isPressed*-1+1) * (key == KEY_CTRL_F1)) && IsTyping == 1){
                 IsTyping = 0;
                 if(strlen(MsgBuffer) == 0){
                     AUX_DisplayErrorMessage(20);
-                }else if(strlen(MsgBuffer) > 20){
+                }else if(strlen(MsgBuffer) > 25){
                     AUX_DisplayErrorMessage(16);
                 }else{
                     Cursor_SetFlashOff();
                     CreateBT(MsgBuffer);
                     locate_OS(1,7);
                     Print_OS("Created !            ", 0, 0);
-                    MsgLength = 6;
+                    MsgLength = 3;
                 }
             }
         }
@@ -373,4 +387,9 @@ void main(void) {
 //0x0165 -> connect     white
 //0x0397 -> load        white
 //0x03F1 -> 3pin        white
+//876    -> List        white
+//925    -> LOAD        white
+//1017   -> OK          white
+
+
 
