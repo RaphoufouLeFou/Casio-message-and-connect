@@ -1,4 +1,4 @@
-# CasioMessgae
+# CasioMessage
  
 This project has the goal of implementing a messaging app to a casio fx-CG50, with an ESP32 using bluetooth and UART
 
@@ -27,7 +27,7 @@ The app present like this :
 
 * F1 start the communication with the ESP32.
 
-* F2 send the signal to the ESP32 to blink the exam led or not. IT DO NOT START THE REAL EXAM MODE OF THE CALCULATOR !
+* F2 send the signal to the ESP32 to blink the exam led or not. IT DOED **NOT** START THE REAL EXAM MODE OF THE CALCULATOR !
 
 * F3 is to open the test mode of the calculator.
 
@@ -53,7 +53,7 @@ Now, you can  press SHIFT + ALPHA to lock the letter mode, and start typing a na
 
 * F6 send you back to the previous window.
 
-* EXE send the signal to the ESP32 to start the bluetooth with the name typed.
+* EXE or F1 send the signal to the ESP32 to start the bluetooth with the name typed.
 
 # Message app
 
@@ -65,4 +65,4 @@ You type your message and then press EXE to send it to the calculator previously
 
 * F6 to receve new messages.
 
-* EXE to send a message.
+* EXE or F1 to send a message.
