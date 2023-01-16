@@ -182,52 +182,17 @@ void MainMenu(){
 void main(void) {
 
     MainMenu();
-
     int key;
-
     int isPressed = 0;
 
     while(1){
+
         isPressed = 0;
         GetKey(&key);
 
         if(window == 0){
             if (key == KEY_CTRL_EXIT) {     //Stop the program if the key is EXIT
                 break;
-            }
-
-            if (key == KEY_CTRL_F1) {       //Start serial comunication with the ESP32 at 9600 bps if F1 is pressed
-                if (Serial_IsOpen() != 1) {
-                    unsigned char mode[6] = {0, 5, 0, 0, 0, 0};    // 9600 bps 8n1
-                    Serial_Open(mode);
-                }else {
-                    Serial_Close(1);
-                }
-
-            }
-
-            if(Serial_IsOpen() == 1){       //check if the serial is open
-                int iresult;
-                GetFKeyPtr(0x0522, &iresult);
-                FKey_Display(0, iresult);       //F1
-                locate_OS(1,6);
-                Print_OS("ESP32 connected    ", 0, 0);
-            }else{                          //This execute if the serial is closed
-                int iresult;
-                GetFKeyPtr(0x0165, &iresult);
-                FKey_Display(0, iresult);       //F1
-                locate_OS(1,6);
-                Print_OS("ESP32 disconnected", 0, 0);
-            }
-
-            if(IsSleeping == 0){
-                locate_OS(1,3);
-                Print_OS("F3:power on ESP32  ", 0, 0);
-            }else if(IsSleeping == 1){
-                locate_OS(1,3);
-                Print_OS("F3:power off ESP32  ", 0, 0);
-                IsSleeping=0;
-                Serial_Write("&SleepEXIT&", 12);
             }
 
             if(key == KEY_CTRL_F2){         //Send signal to ESP32 to blink the exam led if F2 is pressed
@@ -243,7 +208,6 @@ void main(void) {
                     Print_OS("Exam mode off    ", 0, 0);
                     IsExam = 0;
                 }
-
             }
 
             if(key == KEY_CTRL_F3){         //Open test mode if F3 is pressed
@@ -253,7 +217,24 @@ void main(void) {
                     locate_OS(1,3);
                     Print_OS("F3:power on ESP32  ", 0, 0);
                     IsSleeping=1;
+                }else if(IsSleeping == 1){
+                    locate_OS(1,3);
+                    Print_OS("F3:power off ESP32  ", 0, 0);
+                    IsSleeping=0;
+                    Serial_Write("&SleepEXIT&", 12);
+                    for(int i = 0; i < 2000000; i++);
                 }
+            }
+
+            if(IsSleeping == 0 && key != KEY_CTRL_F3){
+                locate_OS(1,3);
+                Print_OS("F3:power off ESP32  ", 0, 0);
+            }else if(IsSleeping == 1 && ( key == KEY_CTRL_F2 || key == KEY_CTRL_F1)){
+                locate_OS(1,3);
+                Print_OS("F3:power off ESP32  ", 0, 0);
+                IsSleeping=0;
+                Serial_Write("&SleepEXIT&", 12);
+                for(int i = 0; i < 2000000; i++);
             }
 
             if(key == KEY_CTRL_F4){         //Open BT list if F4 is pressed
@@ -261,10 +242,32 @@ void main(void) {
                 OpenBTList();
                 window = 1;
             }
+
+            if (key == KEY_CTRL_F1) {       //Start serial comunication with the ESP32 at 9600 bps if F1 is pressed
+                if (Serial_IsOpen() != 1) {
+                    unsigned char mode[6] = {0, 5, 0, 0, 0, 0};    // 9600 bps 8n1
+                    Serial_Open(mode);
+                }else {
+                    Serial_Close(1);
+                }
+            }
+
+            if(Serial_IsOpen() == 1){       //check if the serial is open
+                int iresult;
+                GetFKeyPtr(0x0522, &iresult);
+                FKey_Display(0, iresult);       //F1
+                locate_OS(1,6);
+                Print_OS("ESP32 connected    ", 0, 0);
+            }else{                          //This execute if the serial is closed
+                int iresult;
+                GetFKeyPtr(0x0165, &iresult);
+                FKey_Display(0, iresult);       //F1
+                locate_OS(1,6);
+                Print_OS("ESP32 disconnected", 0, 0);
+            }
         }
 
         if(window == 1){
-
             
             if(((key >= 65 && key <= 90) || (key >= 48 && key <= 57)) && IsTyping == 1){
 
@@ -391,5 +394,4 @@ void main(void) {
 //925    -> LOAD        white
 //1017   -> OK          white
 
-
-
+//TE
