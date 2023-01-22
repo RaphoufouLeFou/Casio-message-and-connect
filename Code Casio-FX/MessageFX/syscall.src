@@ -1,0 +1,25 @@
+	.SECTION P,CODE,ALIGN=4
+
+	.MACRO SYSCALL FUNO, SYSCALLNAME, TAIL=nop
+	.export \SYSCALLNAME'
+\SYSCALLNAME'
+	mov.l #h'\FUNO, r0
+	mov.l #H'80010070, r2
+	jmp @r2
+	\TAIL'
+	.ENDM
+
+	SYSCALL 040C,	_Serial_ReadByte
+	SYSCALL 040D,	_Serial_ReadBytes
+	SYSCALL 040E,	_Serial_WriteByte
+	SYSCALL 040F,	_Serial_WriteBytes
+	SYSCALL 0410,	_Serial_WriteByteFIFO
+	SYSCALL 0411,	_Serial_GetRxBufferSize
+	SYSCALL 0412,	_Serial_GetTxBufferFreeCapacity
+	SYSCALL 0413,	_Serial_ClearReceiveBuffer
+	SYSCALL 0414,	_Serial_ClearTransmitBuffer
+	SYSCALL 0418,	_Serial_Open
+	SYSCALL 0419,	_Serial_Close
+	SYSCALL 0422,	_Serial_Peek
+	SYSCALL 0425,	_Serial_IsOpen
+	.end
