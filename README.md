@@ -9,8 +9,6 @@ the wiring of the ESP32 in the calculator :
 
 ![shematic](https://github.com/RaphoufouLeFou/Casio-message-and-connect/blob/main/Images/shematic.jpg)
 
-<span style="color:red">**WARNING**, I forgot to put a limiting current resistor between IO19 and the calculator !</span>
-
 Don't forget the 10K pullup resistor betwin 3.3V an EN !
 
 TX of the calculator need to be connected to the RX pin of the ESP32, and the RX of the calculator to the TX pin of the ESP32.
