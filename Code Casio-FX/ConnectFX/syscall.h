@@ -41,7 +41,18 @@ int Serial_ClearReceiveBuffer(void);
 //Retourne 0
 int Serial_ClearTransmitBuffer(void);
 
+
+void GetFKeyIconPointer( int FKeyNo, unsigned char *pBitmap );
+
+//Display a popup error
+void DisplayErrorMessage( int id );
+void DisplayMessageBox( int height, unsigned char*message );
+void DisplayFKeyIcon( int FKeyPos, unsigned char *pBitmap );
+
 int Keyboard_PutKeycode(int X, int Y, int Keycode);
+
+void Cursor_SetFlashOn( char flash_style ); 
+void Cursor_SetFlashOff(); 
 
 //Ouvre et prépare l'interface de communication
 //Pour plus de détails, consulter fxreverse-doc-1.pdf ci joint

@@ -38,13 +38,24 @@ void main() {
     char MsgBuffer[256];
     char ReservedBuffer[1024];
     short* recSize;
-    int iresult;
     char msg[] = "Bt name :";
     char res[2062];
     int Nber = 1;
     char *Name = &DeviceName;
     short *recSize2;
     int CountExcess = 0;
+
+    unsigned char *iresult;
+
+    Bdisp_AllClr_VRAM();
+    GetFKeyIconPointer(0x022D, &iresult);
+    DisplayFKeyIcon(5, iresult);
+
+    GetFKeyIconPointer(1060, &iresult);
+    DisplayFKeyIcon(1, iresult);
+
+    GetFKeyIconPointer(0x022C, &iresult);
+    DisplayFKeyIcon(0, iresult);
 
     Serial_ClearTransmitBuffer();
     Serial_WriteBytes("&GetName&", 10);     //send signal to the ESP32 to create BT AP
@@ -65,7 +76,7 @@ void main() {
     Print(res);
     locate(1,4);
     Print("->");
-    //Cursor_SetFlashOn("|");
+    Cursor_SetFlashOn(1);
 
 
     while (1) {
@@ -89,21 +100,24 @@ void main() {
             break;
         }
         /*if (key == KEY_CTRL_F4) {
-            GetFKeyPtr(Nber, &iresult);
-            FKey_Display(0, iresult);
-            GetFKeyPtr(Nber+1, &iresult);
-            FKey_Display(1, iresult);
-            GetFKeyPtr(Nber+2, &iresult);
-            FKey_Display(2, iresult);
-            GetFKeyPtr(Nber+3, &iresult);
-            FKey_Display(3, iresult);
-            GetFKeyPtr(Nber+4, &iresult);
-            FKey_Display(4, iresult);
-            GetFKeyPtr(Nber+5, &iresult);
-            FKey_Display(5, iresult);
-            Nber+=6;
+
             char buff[12];
-            itoa(Nber, buff);
+
+            GetFKeyIconPointer(Nber, &iresult);
+            DisplayFKeyIcon(0, iresult);
+            GetFKeyIconPointer(Nber+1, &iresult);
+            DisplayFKeyIcon(1, iresult);
+            GetFKeyIconPointer(Nber+2, &iresult);
+            DisplayFKeyIcon(2, iresult);
+            GetFKeyIconPointer(Nber+3, &iresult);
+            DisplayFKeyIcon(3, iresult);
+            GetFKeyIconPointer(Nber+4, &iresult);
+            DisplayFKeyIcon(4, iresult);
+            GetFKeyIconPointer(Nber+5, &iresult);
+            DisplayFKeyIcon(5, iresult);
+            Nber+=6;
+            
+            sprintf(buff, "%d", Nber);
             locate(1,5);
             Print(buff);
         }*/
@@ -148,11 +162,15 @@ void main() {
 
         if (key == KEY_CTRL_F2) {
 
-            int iresult3;
-
+            unsigned char* iresult3;
             if(isLowercase == 1){
+                GetFKeyIconPointer(1060, &iresult3);
+                DisplayFKeyIcon(1, iresult3);
                 isLowercase = 0;
             }else if(isLowercase == 0){
+                
+                GetFKeyIconPointer(1061, &iresult3);
+                DisplayFKeyIcon(1, iresult3);
                 isLowercase = 1;
             }
         }
@@ -185,8 +203,7 @@ void main() {
         }
         if(key == KEY_CTRL_EXE || key == KEY_CTRL_F1){
             if(strlen(MsgBuffer) == 0){
-                //AUX_DisplayErrorMessage(20);
-                ;
+                DisplayErrorMessage(20);
             }else{
 
                 int debug;

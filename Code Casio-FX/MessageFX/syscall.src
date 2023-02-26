@@ -22,4 +22,11 @@
 	SYSCALL 0419,	_Serial_Close
 	SYSCALL 0422,	_Serial_Peek
 	SYSCALL 0425,	_Serial_IsOpen
+	SYSCALL 0248,	_Keyboard_PutKeycode
+	SYSCALL 0268,	_GetFKeyIconPointer
+	SYSCALL 0954,	_DisplayErrorMessage
+	SYSCALL 04D1,	_DisplayFKeyIcon
+	SYSCALL 0811,	_Cursor_SetFlashOn
+	SYSCALL 0812,	_Cursor_SetFlashOff
+	SYSCALL 0901,	_DisplayMessageBox
 	.end

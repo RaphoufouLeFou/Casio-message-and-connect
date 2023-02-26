@@ -39,6 +39,7 @@ char ReservedBufferBis[1024];
 
 void OpenBTList(){                          //Create the window to connect to a BT device
 
+    unsigned char *iresult;   
     IsTyping = 1;
     memset(MsgBuffer, 0, 1024);
     Bdisp_AllClr_VRAM();                    //Clear the Vram
@@ -49,13 +50,27 @@ void OpenBTList(){                          //Create the window to connect to a 
     Print((unsigned char*)"Name of the BT device");
     locate(1,4);
     Print((unsigned char*)"->");
+    Cursor_SetFlashOn(1);
     MsgLength = 3;
+
+                             //Put the Fkey bitmap on screen
+    GetFKeyIconPointer(266, &iresult);
+    DisplayFKeyIcon(0, iresult);       //F1
+
+
+    GetFKeyIconPointer(1061, &iresult);
+    DisplayFKeyIcon(1, iresult);      //F2
+
+ 
+    GetFKeyIconPointer(0x02B1, &iresult);
+    DisplayFKeyIcon(5, iresult);      //F6
 
     return;
 }
 
 void CreateBTMenu(){                                //Create the window to create a BT AP
 
+    unsigned char* iresult5;
     MsgLength = 3;
     memset(MsgBuffer, 0, 1024);
     Bdisp_AllClr_VRAM();                            //clear VRAM
@@ -65,15 +80,42 @@ void CreateBTMenu(){                                //Create the window to creat
     Print((unsigned char*)"Name :");      
     locate(1,4);
     Print((unsigned char*)"->");                  
-    //Cursor_SetFlashOn("|");
+    Cursor_SetFlashOn(1);
     IsTyping = 1;
+
+    GetFKeyIconPointer(0x02B1, &iresult5);
+    DisplayFKeyIcon(5, iresult5);      //F6
+
+    GetFKeyIconPointer(1061, &iresult5);
+    DisplayFKeyIcon(1, iresult5);      //F2
+
+    GetFKeyIconPointer(1017, &iresult5);
+    DisplayFKeyIcon(0, iresult5);      //F1
     return;
 }
 
 void MainMenu(){
-    
+
+
+    unsigned char *iresult;
     Bdisp_AllClr_VRAM();
 
+    //Put Fkey bmps on screen
+    GetFKeyIconPointer(0x0165, &iresult);
+    DisplayFKeyIcon(0, iresult);       //F1
+    
+    GetFKeyIconPointer(1113, &iresult);
+    DisplayFKeyIcon(1, iresult);      //F2
+        
+    GetFKeyIconPointer(38, &iresult);
+    DisplayFKeyIcon(2, iresult);      //F3
+
+    GetFKeyIconPointer(0x0165, &iresult);
+    DisplayFKeyIcon(3, iresult);      //F4
+
+    GetFKeyIconPointer(992, &iresult);
+    DisplayFKeyIcon(4, iresult);      //F5
+    
     locate(1,1);
     Print((unsigned char*)"F1:open serial ESP32");
     locate(1,2);
@@ -84,9 +126,9 @@ void MainMenu(){
     Print((unsigned char*)"F4:Connect BT");
     locate(1,5);
     Print((unsigned char*)"F5:Restart ESP32");
-    locate(1,7);
+    locate(1,6);
     Print((unsigned char*)"ESP32 disconnected");
-    locate(1,8);
+    locate(1,7);
     Print((unsigned char*)"Exam mode off    ");
     Keyboard_PutKeycode(-1, -1, 0x30);
     return;
@@ -107,6 +149,11 @@ void main() {
 
         if(window == 0){
             if (key == KEY_CTRL_EXIT) {     //Stop the program if the key is EXIT
+
+                const char* pd = "turn off ESP32 !";
+                locate(3,3);
+                DisplayMessageBox(6, pd);
+
                 break;
             }
 
@@ -126,16 +173,16 @@ void main() {
             }
 
             if(Serial_IsOpen() == 1){       //check if the serial is open
-                int iresult;
-                //GetFKeyPtr(0x0522, &iresult);
-                //FKey_Display(0, iresult);       //F1
-                locate(1,7);
+                unsigned char* iresult;
+                GetFKeyIconPointer(267, &iresult);
+                DisplayFKeyIcon(0, iresult);       //F1
+                locate(1,6);
                 Print((unsigned char*)"ESP32 connected    ");
             }else{                          //This execute if the serial is closed
-                int iresult;
-                //GetFKeyPtr(0x0165, &iresult);
-                //FKey_Display(0, iresult);       //F1
-                locate(1,7);
+                unsigned char* iresult;
+                GetFKeyIconPointer(0x0165, &iresult);
+                DisplayFKeyIcon(0, iresult);       //F1
+                locate(1,6);
                 Print((unsigned char*)"ESP32 disconnected");
             }
 
@@ -144,7 +191,7 @@ void main() {
                     Serial_ClearTransmitBuffer();
                     Serial_WriteBytes("&ExmOn&", 8);
                     Sleep(10);
-                    locate(1,8);
+                    locate(1,7);
                     Print((unsigned char*)"Exam mode on     ");
                     IsExam = 1;
                 }
@@ -152,7 +199,7 @@ void main() {
                     Serial_ClearTransmitBuffer();
                     Serial_WriteBytes("&ExmOff&", 9);
                     Sleep(10);
-                    locate(1,8);
+                    locate(1,7);
                     Print((unsigned char*)"Exam mode off    ");
                     IsExam = 0;
                 }
@@ -200,9 +247,16 @@ void main() {
 
         if(window == 1){
             if (key == KEY_CTRL_F2) {
+
+                unsigned char* iresult3;
                 if(isLowercase == 1){
+                    GetFKeyIconPointer(1060, &iresult3);
+                    DisplayFKeyIcon(1, iresult3);
                     isLowercase = 0;
                 }else if(isLowercase == 0){
+                    
+                    GetFKeyIconPointer(1061, &iresult3);
+                    DisplayFKeyIcon(1, iresult3);
                     isLowercase = 1;
                 }
             }
@@ -234,7 +288,7 @@ void main() {
             if((key == KEY_CTRL_EXE) && IsTyping == 1){
                 IsTyping = 0;
                 if(strlen(MsgBuffer) == 0){
-                    ;
+                    DisplayErrorMessage(20);
                 }else{
                     
                     int IsConnected = 0;
@@ -245,6 +299,13 @@ void main() {
 
                     char *ReservedBufferBisPointer = &ReservedBufferBis;
                     short* recSizeBis;
+
+
+                    Cursor_SetFlashOff();
+
+
+                    //******************************************** ConnectBT *********************************************//
+
 
                     Serial_ClearTransmitBuffer();
                     Serial_WriteBytes("&ConnectBT&", 12);    //send signal to the ESP32 to connect
@@ -270,6 +331,10 @@ void main() {
                         Sleep(1000);
                     }
 
+
+                    //******************************************************************************************************//
+
+
                     locate(1,7);
 
                     if(strcmp(ReservedBufferBis, "&Connect") == 0){            //connected
@@ -291,7 +356,7 @@ void main() {
             if(key == KEY_CTRL_F6 || key == KEY_CTRL_EXIT){
                 Bdisp_AllClr_VRAM();
                 window = 0;
-
+                Cursor_SetFlashOff();
                 MainMenu();
             }
 
@@ -300,16 +365,22 @@ void main() {
         if(window == 2){
             if(key == KEY_CTRL_F6 || key == KEY_CTRL_EXIT){
                 Bdisp_AllClr_VRAM();
+                Cursor_SetFlashOff();
                 window = 1;
                 OpenBTList();
             } 
 
             if (key == KEY_CTRL_F2) {
 
-                int iresult3;
+                unsigned char* iresult3;
                 if(isLowercase == 1){
+                    GetFKeyIconPointer(1060, &iresult3);
+                    DisplayFKeyIcon(1, iresult3);
                     isLowercase = 0;
                 }else if(isLowercase == 0){
+                    
+                    GetFKeyIconPointer(1061, &iresult3);
+                    DisplayFKeyIcon(1, iresult3);
                     isLowercase = 1;
                 }
             }
@@ -344,17 +415,20 @@ void main() {
 
                 IsTyping = 0;
                 if(strlen(MsgBuffer) == 0){
-                    //AUX_DisplayErrorMessage(20);
-                    ;
+                    DisplayErrorMessage(20);
+                    
                 }else if(strlen(MsgBuffer) > 25){
-                    //AUX_DisplayErrorMessage(16);
-                    ;
+                    DisplayErrorMessage(33);
+                    
                 }else{
-                    //Cursor_SetFlashOff();
+                   
 
                     unsigned char *ReservedBuffer;
                     short *recSize;
                     int CountExcess = 0;
+                    Cursor_SetFlashOff();
+
+                    //******************************* Create BT **********************************//
 
                     Serial_ClearTransmitBuffer();
                     Serial_WriteBytes((unsigned char*)"&NewBT&", 8);     //send signal to the ESP32 to create BT AP
@@ -370,6 +444,8 @@ void main() {
                     Serial_ClearTransmitBuffer();
                     Serial_WriteBytes(MsgBuffer, strlen(MsgBuffer));         //Send the name of BT AP to the ESP32
                     Sleep(10);
+
+                    //******************************************************************************//
 
                     locate(1,7);
                     Print((unsigned char*)"Created !            ");

@@ -158,6 +158,8 @@ void MainMenu(){
     Print_OS("F3:power off ESP32", 0, 0);
     locate_OS(1,4);
     Print_OS("F4:Connect BT", 0, 0);
+    locate_OS(1,5);
+    Print_OS("F5:Restart ESP32", 0, 0);
     locate_OS(1,6);
     Print_OS("ESP32 disconnected", 0, 0);
     locate_OS(1,7);
@@ -179,6 +181,7 @@ void main(void) {
 
         if(window == 0){
             if (key == KEY_CTRL_EXIT) {     //Stop the program if the key is EXIT
+                DisplayMessageBox("Don't forget to turn off the ESP32");
                 break;
             }
 
